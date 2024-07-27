@@ -1,11 +1,8 @@
-
 import 'package:fiil_up_app/admin/adminhome.dart';
 import 'package:fiil_up_app/authentication/signup.dart';
 import 'package:fiil_up_app/selectionhome.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -13,13 +10,14 @@ class Login extends StatefulWidget {
   @override
   State<Login> createState() => _LoginState();
 }
+
 class _LoginState extends State<Login> {
   bool isobscuretext = true;
-  final TextEditingController _emailController =TextEditingController();
-  final TextEditingController _passwordController =TextEditingController();
-  final FirebaseAuth _auth =FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> _Login(BuildContext context) async {
+  Future<void> _login(BuildContext context) async {
     try {
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
@@ -29,92 +27,145 @@ class _LoginState extends State<Login> {
         password: password,
       );
 
-      if (email=='muhammedswafvan123@gmail.com'){
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Adminhomeee(),));
-      }
-      else {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeSelection(),));
+      if (email == 'muhammedswafvan123@gmail.com') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdminDashboard(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeSelection(),
+          ),
+        );
       }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sign-in Successful')),
       );
-    }
-    catch (e) {
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to sign in: $e')),
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.yellow,
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Center(child: Padding(
-              padding: const EdgeInsets.only(top: 80),
-              child: Text("Login",style: TextStyle(color: Colors.black,fontSize: 50,fontWeight: FontWeight.bold,fontStyle: FontStyle.italic),),
-            )),
-            Padding(
-              padding: const EdgeInsets.only(left: 10,top: 50,right: 10),
-              child: TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                    labelText: "Email",
-                    suffixIcon: Icon(Icons.mail),
-                    border: OutlineInputBorder()
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 80),
+              Center(
+                child: Text(
+                  "Login",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10,top: 20,right: 10),
-              child: TextField(
+              const SizedBox(height: 50),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: "Email",
+                  suffixIcon: Icon(Icons.mail, color: Colors.black),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
                 obscureText: isobscuretext,
                 controller: _passwordController,
                 decoration: InputDecoration(
-                    labelText: "Password",
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isobscuretext ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: (){
-                        setState(() {
-                          isobscuretext = !isobscuretext;
-                        });
-                      },
+                  labelText: "Password",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isobscuretext ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.black,
                     ),
-                    border: OutlineInputBorder()
+                    onPressed: () {
+                      setState(() {
+                        isobscuretext = !isobscuretext;
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 10,left: 10,top: 30),
-              child: ElevatedButton(onPressed: () => _Login(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,minimumSize: Size(200, 50), ),
-                  child: Text("Login",style:
-                  TextStyle(color: Colors.yellow,
-                      fontWeight: FontWeight.bold,fontSize: 30),)),
-            ),
-            Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 30,top: 35),
-                  child: Text("Don't Have an Account ?",style: TextStyle(fontSize: 20),),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () => _login(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  minimumSize: Size(200, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 35),
-                  child: TextButton(onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Signup(),));
-                  }, child: Text("Sign Up",style:
-                  TextStyle(color: Colors.blue,fontSize: 18),)),
-                )
-              ],
-            ),
-
-          ],
+                child: Text(
+                  "Login",
+                  style: TextStyle(
+                    color: Colors.yellow,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Don't have an account?",
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Signup(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
