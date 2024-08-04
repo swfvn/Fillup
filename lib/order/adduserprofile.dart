@@ -173,9 +173,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: ElevatedButton(
-                          onPressed: () async {
-                            await _addProfile();
-                          },
+                        onPressed: () async {
+                          await _addProfile();
+                        },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.yellow,
                             minimumSize: Size(200, 50),
@@ -184,7 +184,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             ),
                           ),
                           child: Text(
-                            "Add Profile",
+                           "Add Profile",
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 18,
