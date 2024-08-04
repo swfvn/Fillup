@@ -1,8 +1,10 @@
-import 'package:fiil_up_app/order/checkout.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:fiil_up_app/order/orderr.dart'; // Ensure this is the correct path for your NewOrderScreen
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:fiil_up_app/order/orderr.dart';
+import 'package:latlong2/latlong.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,59 +13,45 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  late GoogleMapController _controller;
-
-  final CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(11.258753, 75.780411), // Coordinates for Calicut
-    zoom: 14.0, // Adjust zoom level as needed
-  );
-
-  final Set<Marker> _markers = {
-    Marker(
-      markerId: MarkerId('fuel_station_1'),
-      position: LatLng(11.259, 75.781), // Example coordinates
-      infoWindow: InfoWindow(title: 'Fuel Station 1'),
-    ),
-    Marker(
-      markerId: MarkerId('landmark_1'),
-      position: LatLng(11.260, 75.782), // Example coordinates
-      infoWindow: InfoWindow(title: 'Landmark 1'),
-    ),
-  };
-
-  final String _mapStyle = '''[
-    {
-      "elementType": "geometry",
-      "stylers": [
-        {
-          "color": "#212121"
-        }
-      ]
-    },
-    {
-      "elementType": "labels.icon",
-      "stylers": [
-        {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "elementType": "labels.text.fill",
-      "stylers": [
-        {
-          "color": "#757575"
-        }
-      ]
-    }
-  ]''';
-
   List<String> selectedOrders = [];
+  double? lat;
+  double? long;
+  String locationMessage = 'Loading location...';
+  LatLng initialCenter = LatLng(11.258753, 75.780411); // Default location
 
   @override
   void initState() {
     super.initState();
-    // Initialize map style
+    _getCurrentLocation().then((value) {
+      setState(() {
+        lat = value.latitude;
+        long = value.longitude;
+        locationMessage = 'Latitude: $lat, Longitude: $long';
+        initialCenter = LatLng(lat!, long!); // Update initial center
+      });
+    });
+  }
+
+  Future<Position> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error("Location services are disabled.");
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error("Location permissions are denied.");
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          "Location permissions are permanently denied, we cannot request permissions.");
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 
   @override
@@ -72,10 +60,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(
           'FILLUP',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26, color: Colors.black),
+          style: TextStyle(
+              fontWeight: FontWeight.bold, fontSize: 26, color: Colors.black),
         ),
         backgroundColor: Colors.yellow,
-
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -84,19 +72,18 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                height: 200,
-                child: GoogleMap(
-                  initialCameraPosition: _initialPosition,
-                  markers: _markers,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  zoomControlsEnabled: true,
-                  onMapCreated: (GoogleMapController controller) {
-                    _controller = controller;
-                    _controller.setMapStyle(_mapStyle);
-                  },
-                ),
-              ),
+                  height: 250,
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: initialCenter,
+                      initialZoom: 14,
+                      interactionOptions: const InteractionOptions(
+                          flags: ~InteractiveFlag.doubleTapZoom),
+                    ),
+                    children: [
+                      openStreetMapTileLaywer,
+                    ],
+                  )),
               SizedBox(height: 20),
               Text(
                 'Welcome to Fillup',
@@ -107,25 +94,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => NewOrderScreen()), // Navigate to NewOrderScreen
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            NewOrderScreen()), // Navigate to NewOrderScreen
                   );
                 },
                 child: Text('Place an order'),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
                   backgroundColor: Colors.yellow,
+                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
                 ),
               ),
               SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(child: _buildFuelTypeCard('Petrol')),
-                  SizedBox(width: 10),
-                  Expanded(child: _buildFuelTypeCard('Diesel')),
-                ],
-              ),
-              SizedBox(height: 20),
               Text(
                 'Current Fuel Prices',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -142,17 +123,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   return ListView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.all(16.0),
                     itemCount: prices.length,
                     itemBuilder: (context, index) {
                       final price = prices[index];
                       final data = price.data() as Map<String, dynamic>;
-                      final priceValue = data.containsKey('price') ? data['price'] : 0.0;
+                      final priceValue =
+                          data.containsKey('price') ? data['price'] : 0.0;
 
                       return Card(
+                        elevation: 5,
                         margin: EdgeInsets.symmetric(vertical: 8.0),
-                        color: Colors.yellow[50],
+                        color: Colors.white,
                         child: ListTile(
+                          leading: Icon(
+                            Icons.local_gas_station_rounded,
+                            color: Colors.yellow[700],
+                            size: 36.0, // Adjust the size as needed
+                          ),
                           contentPadding: EdgeInsets.all(16.0),
                           title: Text(
                             '${price.id}',
@@ -165,22 +152,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Price: ₹${priceValue.toStringAsFixed(2)}',
                             style: TextStyle(color: Colors.black87),
                           ),
-                          onTap: () {
-                            // Navigate to PlaceOrder screen with the selected price
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlaceOrder(fuelPrice: priceValue),
-                              ),
-                            );
-                          },
                         ),
                       );
                     },
                   );
                 },
               ),
-              SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -194,72 +171,71 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              StreamBuilder<QuerySnapshot>(
-                stream: _firestore.collection('orders').snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
-                  }
+              Padding(
+                padding: const EdgeInsets.only(bottom: 100),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: _firestore.collection('orders').snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
 
-                  final orders = snapshot.data!.docs;
+                    final orders = snapshot.data!.docs.reversed.toList();
 
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.all(16.0),
-                    itemCount: orders.length,
-                    itemBuilder: (context, index) {
-                      final order = orders[index];
-                      final data = order.data() as Map<String, dynamic>;
-                      final price = data.containsKey('amount') ? data['amount'] : 0.0;
-                      final status = data.containsKey('status') ? data['status'] : 'Unknown';
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.all(16.0),
+                      itemCount: orders.length,
+                      itemBuilder: (context, index) {
+                        final order = orders[index];
+                        final data = order.data() as Map<String, dynamic>;
+                        final price =
+                            data.containsKey('amount') ? data['amount'] : 0.0;
+                        final status = data.containsKey('status')
+                            ? data['status']
+                            : 'Unknown';
 
-                      return _buildOrderCard(order.id, order, '${data['fuelType']} - ${data['quantity']}L', '₹${price.toStringAsFixed(2)}', status);
-                    },
-                  );
-                },
+                        return _buildOrderCard(
+                            order.id,
+                            order,
+                            '${data['fuelType']} - ${data['quantity']}L',
+                            '₹${price.toStringAsFixed(2)}',
+                            status);
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt),
-            label: 'Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 
-  Widget _buildOrderCard(String orderId, QueryDocumentSnapshot order, String orderDetails, String price, String status) {
-    return Card(
-      child: ListTile(
-        leading: Checkbox(
-          value: selectedOrders.contains(orderId),
-          onChanged: (bool? value) {
-            setState(() {
-              if (value == true) {
-                selectedOrders.add(orderId);
-              } else {
-                selectedOrders.remove(orderId);
-              }
-            });
-          },
+  Widget _buildOrderCard(String orderId, QueryDocumentSnapshot order,
+      String orderDetails, String price, String status) {
+    return SizedBox(
+      height:80,
+      child: Card(
+        child: ListTile(
+          leading: Checkbox(
+            value: selectedOrders.contains(orderId),
+            onChanged: (bool? value) {
+              setState(() {
+                if (value == true) {
+                  selectedOrders.add(orderId);
+                } else {
+                  selectedOrders.remove(orderId);
+                }
+              });
+            },
+          ),
+          title: Text(orderDetails),
+          subtitle: Text(price),
+          trailing: Text(status),
         ),
-        title: Text(orderDetails),
-        subtitle: Text(price),
-        trailing: Text(status),
       ),
     );
   }
@@ -275,23 +251,9 @@ class _HomeScreenState extends State<HomeScreen> {
       const SnackBar(content: Text('')),
     );
   }
-
-  Widget _buildFuelTypeCard(String fuelType) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(Icons.local_gas_station, size: 40, color: Colors.yellow),
-            SizedBox(height: 10),
-            Text(fuelType, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          ],
-        ),
-      ),
-    );
-  }
 }
+
+TileLayer get openStreetMapTileLaywer => TileLayer(
+      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+    );
