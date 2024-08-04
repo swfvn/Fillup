@@ -140,8 +140,8 @@ class _ProfileState extends State<Profile> {
         return EditProfile();
       case 'Change Password':
         return UpdatePassword();
-    // case 'Help & Support':
-    //   return PasswordSecurityPage();
+      // case 'Help & Support':
+      //   return PasswordSecurityPage();
       default:
         return Scaffold(
           appBar: AppBar(
