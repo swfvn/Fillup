@@ -12,11 +12,9 @@ class Signup extends StatefulWidget {
 
 class _SignupState extends State<Signup> {
   bool isobscuretext = true;
-  bool isobscuretext1 = true;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> _register() async {
@@ -24,7 +22,6 @@ class _SignupState extends State<Signup> {
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
       String confirmPassword = _confirmPasswordController.text.trim();
-      String name = _nameController.text.trim();
 
       if (password != confirmPassword) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -34,26 +31,24 @@ class _SignupState extends State<Signup> {
       }
 
       // Create user
-      UserCredential userCredential =
-      await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      await firestore.collection('Registration').doc(userCredential.user!.uid).set({
+      await firestore.collection('users').doc(userCredential.user!.uid).set({
         "email": email,
-        "name": name,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registration Successful')),
       );
 
-      // Navigate to Login page after successful registration
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => Login()),
+            (Route<dynamic> route) => false,
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,30 +75,17 @@ class _SignupState extends State<Signup> {
                     color: Colors.black,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
+                    fontFamily: 'Arial',
                   ),
                 ),
               ),
               const SizedBox(height: 50),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: "Name",
-                  suffixIcon: Icon(Icons.person, color: Colors.black),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
+
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: "Email",
+                  labelStyle: TextStyle(color: Colors.black),
                   suffixIcon: Icon(Icons.mail, color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -113,6 +95,8 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.black),
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
@@ -121,6 +105,7 @@ class _SignupState extends State<Signup> {
                 controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: "Password",
+                  labelStyle: TextStyle(color: Colors.black),
                   suffixIcon: IconButton(
                     icon: Icon(
                       isobscuretext ? Icons.visibility_off : Icons.visibility,
@@ -140,25 +125,17 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.black),
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
-                obscureText: isobscuretext1,
+                obscureText: true,
                 controller: _confirmPasswordController,
                 decoration: InputDecoration(
                   labelText: "Confirm Password",
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      isobscuretext1 ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.black,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        isobscuretext1 = !isobscuretext1;
-                      });
-                    },
-                  ),
+                  labelStyle: TextStyle(color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.black),
@@ -167,6 +144,8 @@ class _SignupState extends State<Signup> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.black),
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 30),
@@ -185,6 +164,7 @@ class _SignupState extends State<Signup> {
                     color: Colors.yellow,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    fontFamily: 'Arial',
                   ),
                 ),
               ),
@@ -209,6 +189,7 @@ class _SignupState extends State<Signup> {
                         fontSize: 16,
                         color: Colors.blue,
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Arial',
                       ),
                     ),
                   ),
