@@ -28,18 +28,20 @@ class _LoginState extends State<Login> {
       );
 
       if (email == 'muhammedswafvan123@gmail.com') {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => AdminDashboard(),
           ),
+              (Route<dynamic> route) => false,
         );
       } else {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (context) => HomeSelection(),
           ),
+              (Route<dynamic> route) => false,
         );
       }
       ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +72,7 @@ class _LoginState extends State<Login> {
                     color: Colors.black,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
-
+                    fontFamily: 'Arial',
                   ),
                 ),
               ),
@@ -79,6 +81,7 @@ class _LoginState extends State<Login> {
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: "Email",
+                  labelStyle: TextStyle(color: Colors.black),
                   suffixIcon: Icon(Icons.mail, color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -88,6 +91,8 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.black),
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
@@ -96,6 +101,7 @@ class _LoginState extends State<Login> {
                 controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: "Password",
+                  labelStyle: TextStyle(color: Colors.black),
                   suffixIcon: IconButton(
                     icon: Icon(
                       isobscuretext ? Icons.visibility_off : Icons.visibility,
@@ -115,6 +121,8 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: Colors.black),
                   ),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 30),
@@ -133,6 +141,7 @@ class _LoginState extends State<Login> {
                     color: Colors.yellow,
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
+                    fontFamily: 'Arial',
                   ),
                 ),
               ),
