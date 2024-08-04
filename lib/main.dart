@@ -1,6 +1,5 @@
+import 'package:fiil_up_app/authentication/wrapper.dart';
 import 'package:fiil_up_app/firebase_options.dart';
-import 'package:fiil_up_app/profile.dart';
-import 'package:fiil_up_app/splash.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -22,7 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellow),
         useMaterial3: true,
       ),
-      home: SplashScreen()
+      home: Wrapper()
     );
   }
 }
