@@ -10,27 +10,6 @@ class NewOrderScreen extends StatefulWidget {
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  double _currentFuelPrice = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchFuelPrice();
-  }
-
-  Future<void> _fetchFuelPrice() async {
-    try {
-      // Replace this with your actual collection and document to fetch the price
-      DocumentSnapshot priceDoc = await _firestore.collection('settings').doc('fuelPrice').get();
-      final data = priceDoc.data() as Map<String, dynamic>;
-      setState(() {
-        _currentFuelPrice = data['price'] ?? 0.0;
-      });
-    } catch (e) {
-      // Handle error fetching fuel price
-      print('Error fetching fuel price: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +58,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
 
                       return Card(
                         margin: EdgeInsets.symmetric(vertical: 8.0),
-                        color: Colors.yellow[50],
+                        color: Colors.white,
+                        elevation: 5,
                         child: ListTile(
                           contentPadding: EdgeInsets.all(16.0),
                           title: Text(
@@ -107,7 +87,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PlaceOrder(fuelPrice: _currentFuelPrice),
+                      builder: (context) => PlaceOrder(),
                     ),
                   );
                 },
@@ -115,7 +95,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.yellow,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  padding: EdgeInsets.symmetric(horizontal: 70, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
