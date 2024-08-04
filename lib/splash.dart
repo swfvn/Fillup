@@ -1,7 +1,35 @@
+import 'dart:async';
 import 'package:fiil_up_app/authentication/login.dart';
 import 'package:flutter/material.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(Duration(seconds: 5), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,7 +38,14 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.local_gas_station, size: 100, color: Colors.black),
+            Container(
+              height: 280,
+              decoration: BoxDecoration(
+                image: DecorationImage(image:     AssetImage("assets/images/fm.png"),fit: BoxFit.fill),
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
             SizedBox(height: 20),
             Text(
               'Fast & Reliable.',
@@ -21,7 +56,10 @@ class SplashScreen extends StatelessWidget {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Login(),));
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Login()),
+                );
               },
               child: Text('Get Started'),
               style: ElevatedButton.styleFrom(
